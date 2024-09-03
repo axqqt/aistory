@@ -1,5 +1,6 @@
+"use client"
 import { useEffect, useState } from 'react';
-import { auth, signInWithGoogle } from '../lib/firebase';
+import { auth,signInWithGoogle } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 export default function Home() {

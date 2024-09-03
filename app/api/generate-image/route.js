@@ -1,4 +1,7 @@
+"use server"
+// app/api/generate-image/route.js
 import { Configuration, OpenAIApi } from 'openai';
+import { NextResponse } from 'next/server';
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
@@ -6,8 +9,12 @@ const configuration = new Configuration({
 
 const openai = new OpenAIApi(configuration);
 
-export default async function handler(req, res) {
-  const { prompt } = req.body;
+export async function POST(req) {
+  const { prompt } = await req.json();
+
+  if (!prompt) {
+    return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
+  }
 
   try {
     const response = await openai.createImage({
@@ -17,9 +24,9 @@ export default async function handler(req, res) {
     });
 
     const imageUrl = response.data.data[0].url;
-    res.status(200).json({ imageUrl });
+    return NextResponse.json({ imageUrl }, { status: 200 });
   } catch (error) {
     console.error('Error generating image:', error);
-    res.status(500).json({ error: 'Failed to generate image' });
+    return NextResponse.json({ error: 'Failed to generate image' }, { status: 500 });
   }
 }

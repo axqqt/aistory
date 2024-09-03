@@ -3,13 +3,14 @@ import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-};
+    apiKey: "AIzaSyCfj-o4h1Jp49iqREEHSdZZOE4DQRLCNjU",
+    authDomain: "problems-33746.firebaseapp.com",
+    projectId: "problems-33746",
+    storageBucket: "problems-33746.appspot.com",
+    messagingSenderId: "4637713392",
+    appId: "1:4637713392:web:cb8de88019d96a132bf335",
+    measurementId: "G-LCBEGTE3B2"
+  };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
