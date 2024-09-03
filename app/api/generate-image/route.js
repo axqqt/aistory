@@ -1,7 +1,7 @@
 "use server";
 // app/api/generate-image/route.js
-import { Configuration, OpenAI } from 'openai';
-import { NextResponse } from 'next/server';
+import { Configuration, OpenAI } from "openai";
+import { NextResponse } from "next/server";
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
@@ -13,14 +13,17 @@ export async function POST(req) {
   const { prompt, size } = await req.json();
 
   if (!prompt) {
-    return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
+    return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
   }
 
   try {
     // Function to split the full story prompt into smaller prompts
     const splitPrompts = (fullPrompt) => {
       // For simplicity, split by sentence.
-      return fullPrompt.split('. ').map(sentence => sentence.trim()).filter(sentence => sentence.length > 0);
+      return fullPrompt
+        .split(". ")
+        .map((sentence) => sentence.trim())
+        .filter((sentence) => sentence.length > 0);
     };
 
     const smallerPrompts = splitPrompts(prompt);
@@ -31,7 +34,7 @@ export async function POST(req) {
       const response = await openai.images.generate({
         prompt: smallPrompt,
         n: 1,
-        size: size || '1024x1024',
+        size: size || "1024x1024",
       });
 
       const imageUrl = response.data.data[0].url;
@@ -49,7 +52,10 @@ export async function POST(req) {
 
     return NextResponse.json({ result }, { status: 200 });
   } catch (error) {
-    console.error('Error generating images:', error);
-    return NextResponse.json({ error: 'Failed to generate images' }, { status: 500 });
+    console.error("Error generating images:", error);
+    return NextResponse.json(
+      { error: "Failed to generate images" },
+      { status: 500 }
+    );
   }
 }
