@@ -1,33 +1,69 @@
-"use client"
-import { useState } from 'react';
+"use client";
+import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { storage,auth } from '../lib/firebase'; 
+import { ref, uploadString, getDownloadURL, listAll } from 'firebase/storage';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const Story = () => {
   const [story, setStory] = useState('');
   const [images, setImages] = useState([]);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        loadPreviousImages(currentUser.uid);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const loadPreviousImages = async (userId) => {
+    const storageRef = ref(storage, `images/${userId}`);
+    const imageRefs = await listAll(storageRef);
+    const urls = await Promise.all(
+      imageRefs.items.map((itemRef) => getDownloadURL(itemRef))
+    );
+    setImages(urls);
+  };
 
   const handleStorySubmit = async (e) => {
     e.preventDefault();
 
-    const prompts = analyzeStory(story); // Function to break story into prompts
-
-    const generatedImages = [];
-    for (let prompt of prompts) {
-      const response = await axios.post('/api/generate-image', { prompt });
-      generatedImages.push(response.data.imageUrl);
+    if (!user) {
+      alert('You need to log in to generate images.');
+      return;
     }
 
-    setImages(generatedImages);
+    const prompts = analyzeStory(story);
+
+    const generatedImages = [];
+    for (let i = 0; i < prompts.length; i++) {
+      const prompt = prompts[i];
+      const response = await axios.post('/api/generate-image', { prompt });
+      const imageUrl = response.data.imageUrl;
+
+      // Save image to Firebase Storage
+      const imageRef = ref(storage, `images/${user.uid}/${Date.now()}_${i}.jpg`);
+      await uploadString(imageRef, imageUrl, 'data_url');
+
+      const downloadUrl = await getDownloadURL(imageRef);
+      generatedImages.push(downloadUrl);
+    }
+
+    setImages([...images, ...generatedImages]);
   };
 
   const analyzeStory = (story) => {
-    // Dummy implementation to break down story into smaller prompts
     return story.split('. ').map(sentence => sentence.trim());
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center">
-      <form onSubmit={handleStorySubmit} className="w-full max-w-lg mt-10">
+    <div>
+      <form onSubmit={handleStorySubmit}>
         <textarea
           value={story}
           onChange={(e) => setStory(e.target.value)}
