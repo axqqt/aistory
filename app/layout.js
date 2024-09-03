@@ -8,7 +8,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <nav className="bg-gray-800 p-4 text-white">
-          <Link href="/">Home</Link> | <Link href="/story">Create Story</Link>
+          {/* <Link href="/">Home</Link> | <Link href="/story">Create Story</Link> */}
         </nav>
         <div>{children}</div>
       </body>
