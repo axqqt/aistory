@@ -21,7 +21,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center">
+    <div className="min-h-screen flex flex-col items-center justify-center" style={{margin:"40px"}}>
       {!user ? (
         <button
           onClick={signInWithGoogle}
