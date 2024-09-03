@@ -1,10 +1,10 @@
-"use server"
+"use server";
 // app/api/generate-image/route.js
 import { Configuration, OpenAI } from 'openai';
 import { NextResponse } from 'next/server';
 
 const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 const openai = new OpenAI(configuration);
@@ -19,15 +19,16 @@ export async function POST(req) {
   try {
     // Function to split the full story prompt into smaller prompts
     const splitPrompts = (fullPrompt) => {
-      // For simplicity, split by sentence. You can modify this to use other criteria.
+      // For simplicity, split by sentence.
       return fullPrompt.split('. ').map(sentence => sentence.trim()).filter(sentence => sentence.length > 0);
     };
 
     const smallerPrompts = splitPrompts(prompt);
     const imageResponses = [];
 
+    // Sequentially generate images for each smaller prompt
     for (const smallPrompt of smallerPrompts) {
-      const response = await openai.createImage({
+      const response = await openai.images.generate({
         prompt: smallPrompt,
         n: 1,
         size: size || '1024x1024',
