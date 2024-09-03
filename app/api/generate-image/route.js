@@ -1,13 +1,13 @@
 "use server"
 // app/api/generate-image/route.js
-import { Configuration, OpenAIApi } from 'openai';
+import { Configuration, OpenAI } from 'openai';
 import { NextResponse } from 'next/server';
 
 const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY
 });
 
-const openai = new OpenAIApi(configuration);
+const openai = new OpenAI(configuration);
 
 export async function POST(req) {
   const { prompt } = await req.json();
