@@ -37,7 +37,7 @@ export async function POST(req) {
       const imageUrl = response.data.data[0].url;
       imageResponses.push({
         prompt: smallPrompt,
-        imageUrl: imageUrl,
+        imageUrl,
       });
     }
 

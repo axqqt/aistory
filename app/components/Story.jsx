@@ -43,7 +43,9 @@ const Story = () => {
     const generatedImages = [];
     for (let i = 0; i < prompts.length; i++) {
       const prompt = prompts[i];
-      const response = await axios.post('/api/generate-image', { prompt });
+      executeGeneration(prompt)
+      async function executeGeneration(thePrompt){
+        const response = await axios.post('/api/generate-image', { thePrompt });
       const imageUrl = response.data.imageUrl;
 
       // Save image to Firebase Storage
@@ -52,6 +54,7 @@ const Story = () => {
 
       const downloadUrl = await getDownloadURL(imageRef);
       generatedImages.push(downloadUrl);
+      }
     }
 
     setImages([...images, ...generatedImages]);
