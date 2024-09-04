@@ -2,13 +2,15 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import axios from "axios";
+import fs from "node:fs";
+import FormData from "form-data";
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
 
-// Leonardo AI API configuration
-const LEONARDO_API_KEY = process.env.LEONARDO_API_KEY;
-const LEONARDO_API_URL = "https://cloud.leonardo.ai/api/rest/v1/generations";
+// Stability AI API configuration
+const STABILITY_API_KEY = process.env.STABILITY_API_KEY;
+const STABILITY_API_URL = "https://api.stability.ai/v2beta/stable-image/generate/ultra";
 
 export async function POST(req) {
   const { prompt, size } = await req.json();
@@ -43,35 +45,46 @@ export async function POST(req) {
 
     const imageResponses = [];
 
-    // Generate images for each smaller prompt using Leonardo AI
+    // Generate images for each smaller prompt using Stability AI
     for (const smallPrompt of smallerPrompts) {
-      const response = await axios.post(
-        LEONARDO_API_URL,
-        {
-          prompt: smallPrompt,
-          num_images: 1,
-          width: size === "1024x1024" ? 1024 : 512,
-          height: size === "1024x1024" ? 1024 : 512,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${LEONARDO_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const imageUrl = response.data.generations[0].image_url;
-      imageResponses.push({
+      const payload = {
         prompt: smallPrompt,
-        imageUrl,
-      });
+        output_format: "webp",
+      };
+
+      try {
+        const response = await axios.postForm(
+          STABILITY_API_URL,
+          axios.toFormData(payload, new FormData()),
+          {
+            validateStatus: undefined,
+            responseType: "arraybuffer",
+            headers: { 
+              Authorization: `Bearer ${STABILITY_API_KEY}`, 
+              Accept: "image/*" 
+            },
+          },
+        );
+
+        if (response.status === 200) {
+          const imageName = `./${smallPrompt.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.webp`;
+          fs.writeFileSync(imageName, Buffer.from(response.data));
+          imageResponses.push({
+            prompt: smallPrompt,
+            imageUrl: imageName,
+          });
+        } else {
+          console.error(`Failed to generate image: ${response.status}: ${response.data.toString()}`);
+        }
+      } catch (error) {
+        console.error("Error generating image with Stability AI:", error);
+      }
     }
 
     // Format the final response with highlighted prompts and images
     const Outcome = smallerPrompts.map((smallPrompt, index) => ({
       highlightedPrompt: `<strong>${smallPrompt}</strong>`,
-      imageUrl: imageResponses[index].imageUrl,
+      imageUrl: imageResponses[index]?.imageUrl || 'Image generation failed',
     }));
 
     return NextResponse.json({ Outcome }, { status: 200 });
