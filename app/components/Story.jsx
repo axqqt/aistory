@@ -45,7 +45,7 @@ const Story = () => {
       const prompt = prompts[i];
       executeGeneration(prompt);
       async function executeGeneration(thePrompt) {
-        const response = await axios.post("/api/generate-image", { thePrompt });
+        const response = await axios.post("/api/image-gen", { thePrompt });
         console.log(response.data);
         
         const imageUrl = response.data.imageUrl;
