@@ -50,6 +50,7 @@ export async function POST(req) {
       const payload = {
         prompt: smallPrompt,
         output_format: "webp",
+        size
       };
 
       try {
